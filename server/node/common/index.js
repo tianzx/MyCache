@@ -2,18 +2,26 @@
  * Created by tianzx on 2017/7/10.
  */
 module.exports = function (args, opts) {
+    /**
+     * 赋值
+     */
     if (!opts) opts = {};
 
+    /**
+     * to do
+     * @type {{bools: {}, strings: {}}}
+     */
     var flags = { bools : {}, strings : {} };
 
     [].concat(opts['boolean']).filter(Boolean).forEach(function (key) {
         flags.bools[key] = true;
     });
+    console.log(flags.bools);
 
     [].concat(opts.string).filter(Boolean).forEach(function (key) {
         flags.strings[key] = true;
     });
-
+    console.log(flags.strings)
     var aliases = {};
     Object.keys(opts.alias || {}).forEach(function (key) {
         aliases[key] = [].concat(opts.alias[key]);
