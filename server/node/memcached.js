@@ -2,7 +2,7 @@
  * Created by tianzx on 2017/7/7.
  */
 /**
- * node --nouse-idle-notification --expose-gc --max-old-space-size=8192 Memcached.js
+ * node --nouse-idle-notification --expose-gc --max-old-space-size=8192 memcached.js
  */
 var net = require('net');
 var store = {}
