@@ -1,10 +1,14 @@
 /**
  * Created by tianzx on 2017/7/11.
  */
-const Client = require('./mem_04/index').Client
+const Client = require('./mem_05/index').Client
 
-const client  =  new Client(17465,'memcached-17465.c1.asia-northeast1-1.gce.cloud.redislabs.com')
+const client = new Client(17465, 'memcached-17465.c1.asia-northeast1-1.gce.cloud.redislabs.com')
 
 client.connect();
 
-client.set('name','tianx')
+client.set('name', 'tianzx93', function (data) {
+    // console.log(data)
+    client.close()
+})
+
