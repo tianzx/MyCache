@@ -7,8 +7,8 @@ const client = new Client(17465, 'memcached-17465.c1.asia-northeast1-1.gce.cloud
 
 client.connect();
 
-client.set('name', 'tianzx93', function (data) {
+client.set('name', 'tianzx234', function (data) {
     // console.log(data)
     client.close()
-})
+}, 1, 0)
 
