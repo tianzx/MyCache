@@ -86,6 +86,7 @@ Client.prototype.query = function (query, type, callback) {
     this.callbacks.push({type: type, fun: callback});
     this.sends++;
     this.conn.write(query + crlf);
+    return ;
 };
 
 Client.prototype.close = function () {
@@ -255,6 +256,13 @@ Client.prototype.determine_reply_handler = function (buffer) {
     return null;
 };
 
+/**
+ * VALUE name 1 6\r\n tianzx\r\n END
+ * tianzx
+ * END
+ * @param buffer
+ * @returns {[*,*]}
+ */
 Client.prototype.handle_get = function (buffer) {
     var next_result_at = 0;
     var result_value = null;
