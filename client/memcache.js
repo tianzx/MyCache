@@ -1,122 +1,69 @@
 /**
  * Created by tianzx on 2017/7/11.
  */
-
 var tcp = require('net'),
-    util = require('util');
+    sys = require('sys');
 
-var crlf = "\r\n";//
-var crlf_len = crlf.length;//2
+var crlf = "\r\n";
+var crlf_len = crlf.length;
 
 var error_replies = ['ERROR', 'NOT_FOUND', 'CLIENT_ERROR', 'SERVER_ERROR'];
 
 var Client = exports.Client = function (port, host) {
     this.port = port || 11211;
     this.host = host || 'localhost';
-    /**
-     * 接受缓冲区
-     * @type {string}
-     */
     this.buffer = '';
-    /**
-     * 连接
-     * @type {null}
-     */
     this.conn = null;
-    /**
-     * 发送
-     * @type {number}
-     */
     this.sends = 0;
-    /**
-     * 响应
-     * @type {number}
-     */
     this.replies = 0;
-    /**
-     * 回调
-     * @type {Array}
-     */
     this.callbacks = [];
-    /**
-     * 处理
-     * @type {Array}
-     */
     this.handles = [];
 };
-/**
- * 集成事件触发
- */
-util.inherits(Client, process.EventEmitter);
-/**
- * 连接
- */
+
+sys.inherits(Client, process.EventEmitter);
+
 Client.prototype.connect = function () {
     if (!this.conn) {
-        /**
-         * 初始化连接
-         * @type {tcp.createConnection}
-         */
         this.conn = new tcp.createConnection(this.port, this.host);
-        /**
-         * 持有this
-         * @type {exports.Client}
-         */
         var self = this;
-        /**
-         * 连接时
-         */
         this.conn.addListener("connect", function () {
             this.setTimeout(0);          // try to stay connected.
             this.setNoDelay();
             self.emit("connect");
             self.dispatchHandles();
         });
-        /**
-         * 获取到数据后
-         */
+
         this.conn.addListener("data", function (data) {
             self.buffer += data;
-            // util.debug(data);
+            // sys.debug(data);
             self.recieves += 1;
             self.handle_received_data();
         });
-        /**
-         *socket结束
-         */
+
         this.conn.addListener("end", function () {
             if (self.conn && self.conn.readyState) {
                 self.conn.end();
                 self.conn = null;
             }
         });
-        /**
-         * 关闭流
-         */
+
         this.conn.addListener("close", function () {
             self.conn = null;
             self.emit("close");
         });
-        /**
-         * 超时
-         */
+
         this.conn.addListener("timeout", function () {
             self.conn = null;
             self.emit("timeout");
         });
-        /**
-         * 错误
-         */
+
         this.conn.addListener("error", function (ex) {
             self.conn = null;
             self.emit("error", ex);
         });
     }
 };
-/**
- * handler 添加 回调函数
- * @param callback
- */
+
 Client.prototype.addHandler = function (callback) {
     this.handles.push(callback);
 
@@ -124,13 +71,11 @@ Client.prototype.addHandler = function (callback) {
         this.dispatchHandles();
     }
 };
-/**
- * 回调函数执行
- */
+
 Client.prototype.dispatchHandles = function () {
     for (var i in this.handles) {
         var handle = this.handles.shift();
-        // util.debug('dispatching handle ' + handle);
+        // sys.debug('dispatching handle ' + handle);
         if (typeof handle !== 'undefined') {
             handle();
         }
@@ -139,18 +84,10 @@ Client.prototype.dispatchHandles = function () {
 
 Client.prototype.query = function (query, type, callback) {
     this.callbacks.push({type: type, fun: callback});
-    /**
-     * 写入＋1
-     */
     this.sends++;
-    /**
-     * tcp 写入数据
-     */
     this.conn.write(query + crlf);
 };
-/**
- * 关闭连接
- */
+
 Client.prototype.close = function () {
     if (this.conn && this.conn.readyState === "open") {
         this.conn.end();
@@ -188,7 +125,7 @@ Client.prototype.store = function (cmd, key, value, callback, lifetime, flags) {
 
     var set_flags = flags || 0;
     var exp_time = lifetime || 0;
-    var tml_buf = new Buffer(value.toString());
+    var tml_buf = new Buffer(value);
     var value_len = tml_buf.length || 0;
     var query = [cmd, key, set_flags, exp_time, value_len];
 
@@ -213,7 +150,7 @@ Client.prototype.cas = function (key, value, unique, callback, lifetime, flags) 
 
 
 Client.prototype.del = function (key, callback) {
-    util.error("mc.del() is deprecated - use mc.delete() instead");
+    sys.error("mc.del() is deprecated - use mc.delete() instead");
     return this.delete(key, callback);
 };
 
@@ -288,7 +225,7 @@ Client.prototype.handle_received_data = function () {
         var callback = this.callbacks.shift();
         if (callback != null && callback.fun) {
             this.replies++;
-            callback.fun(result_error, result_value);
+            callback.fun(result_value, result_error);
         }
     }
 };
@@ -322,11 +259,10 @@ Client.prototype.handle_get = function (buffer) {
     var next_result_at = 0;
     var result_value = null;
     var end_indicator_len = 3;
-    var result_len = 0;
 
     if (buffer.indexOf('END') == 0) {
         return [result_value, end_indicator_len + crlf_len];
-    } else if (buffer.indexOf('VALUE') == 0 && buffer.indexOf('END') != -1) {
+    } else if (buffer.indexOf('VALUE') == 0) {
         first_line_len = buffer.indexOf(crlf) + crlf_len;
         var end_indicator_start = buffer.indexOf('END');
         result_len = end_indicator_start - first_line_len - crlf_len;
@@ -386,7 +322,7 @@ Client.prototype.handle_version = function (buffer) {
 };
 
 Client.prototype.handle_error = function (buffer) {
-    var line = readLine(buffer);
+    line = readLine(buffer);
     return [null, (line.length + crlf_len), line];
 };
 
