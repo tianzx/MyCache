@@ -7,7 +7,7 @@
  * @returns {*}
  */
 /**
- *      Byte/     0       |       1       |       2       |       3       |
+ 0              |       1       |       2       |       3       |
  /              |               |               |               |
  |0 1 2 3 4 5 6 7|0 1 2 3 4 5 6 7|0 1 2 3 4 5 6 7|0 1 2 3 4 5 6 7|
  +---------------+---------------+---------------+---------------+
@@ -26,6 +26,7 @@
  * @param headerBuf
  * @returns {*}
  * network transfer use big
+ * headerBuf buffer
  */
 const fromBuffer = function (headerBuf) {
 
@@ -38,7 +39,7 @@ const fromBuffer = function (headerBuf) {
         opcode: headerBuf.readUInt8(1),
         keyLength: headerBuf.readUInt16BE(2),
         extrasLength: headerBuf.readUInt8(4),
-        dataType: headerBuf.readUInt8(6),
+        dataType: headerBuf.readUInt8(5),
         status: headerBuf.readUInt16BE(6),
         totalBodyLength: headerBuf.readUInt32BE(8),
         opaque: headerBuf.readUInt32BE(12),
@@ -49,6 +50,7 @@ const fromBuffer = function (headerBuf) {
  *  Response header parse
  * @param header
  * @returns {Buffer}
+ * header obj
  */
 const toBuffer = function (header) {
     headerBuf = new Buffer(24);
