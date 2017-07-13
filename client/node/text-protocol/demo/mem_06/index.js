@@ -73,7 +73,7 @@ Client.prototype.handle_received_data = () => {
 }
 Client.prototype.determine_reply_handler = function (buffer) {
     let crlf_at = buffer.indexOf(crlf);
-    if (crlf_at == -1) {
+    if (crlf_at === -1) {
         return null;
     }
     for (var error_idx in error_replies) {
