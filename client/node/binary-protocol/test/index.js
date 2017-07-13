@@ -27,3 +27,8 @@ const data = console.log(buffer.readUInt16BE(0))
 // const data2 = buffer2.writeUInt16BE("VAFASDFAFA")
 buffer2.writeUInt16BE(0x5641||0, 0);
 console.log(buffer2)
+const str = "tianzx"
+for (var ret = 0, i = 0, len = str.length; i < len; i++) {
+    ret = (31 * ret + str.charCodeAt(i)) << 0;
+}
+console.log(ret)
