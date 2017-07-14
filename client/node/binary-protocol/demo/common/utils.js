@@ -26,8 +26,17 @@ exports.hashcode = function (str) {
 }
 
 exports.parseResponse = function (dataBuf) {
-    if(dataBuf.length<24) {
+    if (dataBuf.length < 24) {
         return false
     }
+    var responseHeader = header.fromBuffer(dataBuf);
+    if (dataBuf.length < responseHeader.totalBodyLength + 24 || responseHeader.totalBodyLength < responseHeader.keyLength + responseHeader.extrasLength) {
+        return false;
+    }
+    var pointer = 24;
+    var extras = dataBuf.slice(pointer, (pointer += responseHeader.extrasLength));
+    var key = dataBuf.slice(pointer, (pointer += responseHeader.keyLength));
+    var value = dataBuf.slice(pointer, 24 + responseHeader.totalBodyLength);
 
+    return {header: responseHeader, key: key, extras: extras, value: value};
 }
